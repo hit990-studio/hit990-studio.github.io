@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Email scanners follow links automatically to check for phishing. A default
+     Firebase reset link is a single-use token that gets burned by the first
+     visitor, so scanners consume it and the real user sees "link expired". This
+     interstitial page gates the Firebase Auth SDK calls behind an explicit
+     human click, so preview bots walk away without triggering the API. -->
+<meta name="robots" content="noindex, nofollow">
+<title>Hit 990 · 帳號驗證 / Account Verification</title>
+<style>
+  :root {
+    --bg: #fafafa;
+    --surface: #ffffff;
+    --ink: #1a1a1a;
+    --muted: #555;
+    --faint: #999;
+    --border: #e0e0e0;
+    --accent: #2850d4;
+    --accent-bg: rgba(40, 80, 212, 0.08);
+    --danger: #c4313a;
+    --success: #1c8250;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f0f0f;
+      --surface: #1a1a1a;
+      --ink: #f0f0f0;
+      --muted: #aaa;
+      --faint: #777;
+      --border: #2a2a2a;
+      --accent: #6d8cff;
+      --accent-bg: rgba(109, 140, 255, 0.14);
+      --danger: #ff5b66;
+      --success: #4fc08d;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC",
+                 "Noto Sans TC", "Roboto", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  main {
+    width: 100%;
+    max-width: 440px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px 28px 28px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+  }
+  .brand {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+  h1 {
+    font-size: 22px;
+    margin: 8px 0 6px;
+    line-height: 1.3;
+  }
+  p {
+    margin: 0 0 12px;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .field {
+    margin-top: 18px;
+  }
+  label {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--faint);
+    margin-bottom: 6px;
+  }
+  input[type=password] {
+    width: 100%;
+    padding: 14px 14px;
+    font-size: 15px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  input[type=password]:focus { border-color: var(--accent); }
+  button.primary {
+    display: block;
+    width: 100%;
+    margin-top: 22px;
+    padding: 14px;
+    font-size: 15px;
+    font-weight: 600;
+    border: none;
+    border-radius: 14px;
+    background: var(--accent);
+    color: white;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  button.primary:disabled { opacity: 0.45; cursor: default; }
+  button.primary:not(:disabled):hover { opacity: 0.92; }
+  .note {
+    margin-top: 14px;
+    font-size: 12px;
+    color: var(--faint);
+  }
+  .status {
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    margin-top: 18px;
+  }
+  .status.error { background: rgba(196, 49, 58, 0.1); color: var(--danger); }
+  .status.ok { background: rgba(28, 130, 80, 0.1); color: var(--success); }
+  .foot {
+    margin-top: 28px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--faint);
+    text-align: center;
+  }
+  .foot a { color: var(--accent); text-decoration: none; }
+  .spinner {
+    display: inline-block;
+    width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,0.35);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: -2px;
+    margin-right: 8px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <div class="brand">Hit 990</div>
+
+  <!-- Stage 1: Interstitial. Waits for a real human click before any Firebase
+       API call — blocks email-scanner token consumption. -->
+  <section id="stage-intro">
+    <h1 id="intro-title">請確認身分</h1>
+    <p id="intro-body">為了防止自動化掃描器影響驗證，請按下按鈕繼續。</p>
+    <button class="primary" id="btn-continue">繼續</button>
+    <p class="note" id="intro-note">這一步是為了保護你的帳號。</p>
+  </section>
+
+  <!-- Stage 2a: Password reset form (appears after we've verified the code). -->
+  <section id="stage-reset" class="hidden">
+    <h1>重設密碼</h1>
+    <p id="reset-hint">請輸入新密碼（至少 8 個字元）。</p>
+    <div class="field">
+      <label for="pw1">新密碼</label>
+      <input type="password" id="pw1" autocomplete="new-password">
+    </div>
+    <div class="field">
+      <label for="pw2">確認新密碼</label>
+      <input type="password" id="pw2" autocomplete="new-password">
+    </div>
+    <button class="primary" id="btn-submit">儲存</button>
+    <div id="reset-status" class="status hidden"></div>
+  </section>
+
+  <!-- Stage 2b: Generic success (email verified). -->
+  <section id="stage-ok" class="hidden">
+    <h1 id="ok-title">完成</h1>
+    <p id="ok-body">你可以回到 Hit 990 App 繼續使用。</p>
+  </section>
+
+  <!-- Stage 2c: Generic error. -->
+  <section id="stage-error" class="hidden">
+    <h1 id="err-title">連結無效</h1>
+    <p id="err-body">此連結已過期或已被使用過。請回到 App 重新發送。</p>
+  </section>
+
+  <div class="foot">
+    Hit 990 · <a href="https://hit990-studio.github.io/privacy/">Privacy</a>
+  </div>
+</main>
+
+<script type="module">
+  // Firebase Web SDK — loaded from the CDN so there's no build step.
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    getAuth,
+    verifyPasswordResetCode,
+    confirmPasswordReset,
+    applyActionCode,
+    checkActionCode,
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+  // ------------------------------------------------------------------
+  // Read params Firebase appends to our custom action URL.
+  // mode: "resetPassword" | "verifyEmail" | "recoverEmail" | ...
+  // oobCode: one-time token that actually mutates state
+  // apiKey: the project's web API key (public, fine to use client-side)
+  // lang: preferred language code
+  // continueUrl: optional post-action redirect
+  // ------------------------------------------------------------------
+  const params = new URLSearchParams(location.search);
+  const mode = params.get("mode") || "";
+  const oobCode = params.get("oobCode") || "";
+  const apiKeyFromUrl = params.get("apiKey") || "";
+  const lang = (params.get("lang") || "en").toLowerCase();
+
+  // The apiKey in the URL is authoritative (Firebase signs links with it).
+  // Hardcode our project id + authDomain since they're fixed for this app.
+  const firebaseConfig = {
+    apiKey: apiKeyFromUrl || "AIzaSyBbIiArDSNKXTUdNL89MxZMEMaIKYMDKlw",
+    authDomain: "hit-990.firebaseapp.com",
+    projectId: "hit-990",
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  auth.languageCode = lang || "en";
+
+  // ------------------------------------------------------------------
+  // Minimal i18n. Default zh-TW; swap to English on `lang=en`.
+  // Keeping this as one dict per string instead of a translation lib so the
+  // page stays zero-dependency and small.
+  // ------------------------------------------------------------------
+  const isEn = lang.startsWith("en");
+  const t = {
+    intro_title_reset: isEn ? "Verify it's you" : "請確認身分",
+    intro_body_reset: isEn
+      ? "To protect your account from automatic link scanners, tap Continue to keep going."
+      : "為了防止自動化掃描器影響驗證，請按下按鈕繼續。",
+    intro_title_verify: isEn ? "Confirm your email" : "確認你的 email",
+    intro_body_verify: isEn
+      ? "Tap Continue to verify your email address."
+      : "按下按鈕以完成 email 驗證。",
+    btn_continue: isEn ? "Continue" : "繼續",
+    btn_save: isEn ? "Save" : "儲存",
+    btn_saving: isEn ? "Saving…" : "儲存中…",
+    reset_title: isEn ? "Reset password" : "重設密碼",
+    reset_hint: isEn
+      ? "Enter your new password (at least 8 characters)."
+      : "請輸入新密碼（至少 8 個字元）。",
+    label_pw1: isEn ? "New password" : "新密碼",
+    label_pw2: isEn ? "Confirm password" : "確認新密碼",
+    err_too_short: isEn ? "Password must be at least 8 characters." : "密碼至少 8 個字元。",
+    err_mismatch: isEn ? "Passwords don't match." : "兩次密碼不一致。",
+    err_weak: isEn ? "Please choose a stronger password." : "請選擇更強的密碼。",
+    err_invalid: isEn
+      ? "This link has expired or has already been used."
+      : "此連結已過期或已被使用過。",
+    err_generic: isEn ? "Something went wrong. Please try again." : "發生錯誤，請稍後再試。",
+    ok_reset_title: isEn ? "Password updated" : "密碼已更新",
+    ok_reset_body: isEn
+      ? "You can now sign in to Hit 990 with your new password."
+      : "你現在可以用新密碼登入 Hit 990 了。",
+    ok_verify_title: isEn ? "Email verified" : "Email 已驗證",
+    ok_verify_body: isEn
+      ? "Thanks! Go back to the Hit 990 app to continue."
+      : "感謝驗證！請回到 Hit 990 App 繼續使用。",
+    err_title: isEn ? "Link no longer valid" : "連結無效",
+  };
+
+  // ------------------------------------------------------------------
+  // Helpers.
+  // ------------------------------------------------------------------
+  const $ = (id) => document.getElementById(id);
+  function show(id) {
+    for (const s of ["stage-intro", "stage-reset", "stage-ok", "stage-error"]) {
+      $(s).classList.toggle("hidden", s !== id);
+    }
+  }
+  function setStatus(kind, msg) {
+    const el = $("reset-status");
+    el.className = "status " + kind;
+    el.textContent = msg;
+    el.classList.remove("hidden");
+  }
+
+  // ------------------------------------------------------------------
+  // Intro text depends on mode (reset vs verify).
+  // ------------------------------------------------------------------
+  if (mode === "verifyEmail") {
+    $("intro-title").textContent = t.intro_title_verify;
+    $("intro-body").textContent = t.intro_body_verify;
+  } else {
+    $("intro-title").textContent = t.intro_title_reset;
+    $("intro-body").textContent = t.intro_body_reset;
+  }
+  $("btn-continue").textContent = t.btn_continue;
+  $("btn-submit").textContent = t.btn_save;
+  document.querySelectorAll("[for=pw1]").forEach(e => e.textContent = t.label_pw1);
+  document.querySelectorAll("[for=pw2]").forEach(e => e.textContent = t.label_pw2);
+  document.querySelector("#stage-reset h1").textContent = t.reset_title;
+  $("reset-hint").textContent = t.reset_hint;
+  $("err-title").textContent = t.err_title;
+  $("err-body").textContent = t.err_invalid;
+
+  if (!oobCode || !mode) {
+    show("stage-error");
+  }
+
+  // ------------------------------------------------------------------
+  // Stage 1 → Stage 2 transition. Only runs after explicit human click.
+  // ------------------------------------------------------------------
+  $("btn-continue").addEventListener("click", async () => {
+    $("btn-continue").disabled = true;
+    try {
+      if (mode === "resetPassword") {
+        // Verifying the code here doesn't consume it — only confirmPasswordReset
+        // does. So we can show the new-password form with confidence.
+        await verifyPasswordResetCode(auth, oobCode);
+        show("stage-reset");
+        $("pw1").focus();
+      } else if (mode === "verifyEmail") {
+        // applyActionCode is the consumer for verify-email; there's no separate
+        // "dry run" that we can show an intermediate screen for. One click,
+        // one consumption — which is OK because the human already initiated it.
+        await applyActionCode(auth, oobCode);
+        $("ok-title").textContent = t.ok_verify_title;
+        $("ok-body").textContent = t.ok_verify_body;
+        show("stage-ok");
+      } else if (mode === "recoverEmail") {
+        await checkActionCode(auth, oobCode);
+        await applyActionCode(auth, oobCode);
+        $("ok-title").textContent = isEn ? "Email restored" : "Email 已還原";
+        $("ok-body").textContent = isEn
+          ? "Your sign-in email has been reverted."
+          : "你的登入信箱已還原。";
+        show("stage-ok");
+      } else {
+        show("stage-error");
+      }
+    } catch (e) {
+      show("stage-error");
+    }
+  });
+
+  // ------------------------------------------------------------------
+  // Password reset submit.
+  // ------------------------------------------------------------------
+  $("btn-submit").addEventListener("click", async () => {
+    const pw1 = $("pw1").value;
+    const pw2 = $("pw2").value;
+    $("reset-status").classList.add("hidden");
+    if (pw1.length < 8) {
+      setStatus("error", t.err_too_short);
+      return;
+    }
+    if (pw1 !== pw2) {
+      setStatus("error", t.err_mismatch);
+      return;
+    }
+    $("btn-submit").disabled = true;
+    $("btn-submit").innerHTML = '<span class="spinner"></span>' + t.btn_saving;
+    try {
+      await confirmPasswordReset(auth, oobCode, pw1);
+      $("ok-title").textContent = t.ok_reset_title;
+      $("ok-body").textContent = t.ok_reset_body;
+      show("stage-ok");
+    } catch (e) {
+      $("btn-submit").disabled = false;
+      $("btn-submit").textContent = t.btn_save;
+      const msg = String(e?.code || "");
+      if (msg.includes("weak-password")) setStatus("error", t.err_weak);
+      else if (msg.includes("invalid-action-code") || msg.includes("expired")) {
+        show("stage-error");
+      } else {
+        setStatus("error", t.err_generic);
+      }
+    }
+  });
+</script>
+</body>
+</html>
