@@ -3,208 +3,396 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Hit 990 · 隱私政策 / Privacy Policy</title>
+<!-- Email scanners follow links automatically to check for phishing. A default
+     Firebase reset link is a single-use token that gets burned by the first
+     visitor, so scanners consume it and the real user sees "link expired". This
+     interstitial page gates the Firebase Auth SDK calls behind an explicit
+     human click, so preview bots walk away without triggering the API. -->
+<meta name="robots" content="noindex, nofollow">
+<title>Hit 990 · 帳號驗證 / Account Verification</title>
 <style>
   :root {
     --bg: #fafafa;
+    --surface: #ffffff;
     --ink: #1a1a1a;
     --muted: #555;
+    --faint: #999;
     --border: #e0e0e0;
     --accent: #2850d4;
+    --accent-bg: rgba(40, 80, 212, 0.08);
+    --danger: #c4313a;
+    --success: #1c8250;
   }
   @media (prefers-color-scheme: dark) {
-    :root { --bg:#111; --ink:#eee; --muted:#aaa; --border:#333; --accent:#6d8cff; }
+    :root {
+      --bg: #0f0f0f;
+      --surface: #1a1a1a;
+      --ink: #f0f0f0;
+      --muted: #aaa;
+      --faint: #777;
+      --border: #2a2a2a;
+      --accent: #6d8cff;
+      --accent-bg: rgba(109, 140, 255, 0.14);
+      --danger: #ff5b66;
+      --success: #4fc08d;
+    }
   }
   * { box-sizing: border-box; }
+  html, body { height: 100%; }
   body {
     margin: 0;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC",
-                 "Noto Sans TC", sans-serif;
+                 "Noto Sans TC", "Roboto", sans-serif;
     background: var(--bg);
     color: var(--ink);
-    line-height: 1.7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
   }
   main {
-    max-width: 780px;
-    margin: 0 auto;
-    padding: 36px 24px 72px;
+    width: 100%;
+    max-width: 440px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px 28px 28px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
   }
-  h1 { font-size: 26px; margin: 0 0 4px; }
-  h2 { font-size: 18px; margin-top: 32px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
-  h3 { font-size: 15px; margin-top: 22px; }
-  .lang-switch { margin: 4px 0 28px; }
-  .lang-switch a { color: var(--accent); text-decoration: none; font-weight: 600; padding: 4px 10px; border: 1px solid var(--border); border-radius: 8px; }
-  .lang-switch a.active { background: var(--accent); color: white; border-color: var(--accent); }
-  .meta { color: var(--muted); font-size: 13px; margin-bottom: 28px; }
-  p, li { font-size: 15px; }
-  code { background: rgba(127,127,127,.15); padding: 1px 6px; border-radius: 4px; font-size: 13px; }
-  .section { display: none; }
-  .section.active { display: block; }
-  .contact { margin-top: 24px; padding: 14px 16px; background: rgba(127,127,127,.1); border-radius: 10px; font-size: 14px; }
+  .brand {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+  h1 {
+    font-size: 22px;
+    margin: 8px 0 6px;
+    line-height: 1.3;
+  }
+  p {
+    margin: 0 0 12px;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .field {
+    margin-top: 18px;
+  }
+  label {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--faint);
+    margin-bottom: 6px;
+  }
+  input[type=password] {
+    width: 100%;
+    padding: 14px 14px;
+    font-size: 15px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  input[type=password]:focus { border-color: var(--accent); }
+  button.primary {
+    display: block;
+    width: 100%;
+    margin-top: 22px;
+    padding: 14px;
+    font-size: 15px;
+    font-weight: 600;
+    border: none;
+    border-radius: 14px;
+    background: var(--accent);
+    color: white;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  button.primary:disabled { opacity: 0.45; cursor: default; }
+  button.primary:not(:disabled):hover { opacity: 0.92; }
+  .note {
+    margin-top: 14px;
+    font-size: 12px;
+    color: var(--faint);
+  }
+  .status {
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    margin-top: 18px;
+  }
+  .status.error { background: rgba(196, 49, 58, 0.1); color: var(--danger); }
+  .status.ok { background: rgba(28, 130, 80, 0.1); color: var(--success); }
+  .foot {
+    margin-top: 28px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--faint);
+    text-align: center;
+  }
+  .foot a { color: var(--accent); text-decoration: none; }
+  .spinner {
+    display: inline-block;
+    width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,0.35);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: -2px;
+    margin-right: 8px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .hidden { display: none !important; }
 </style>
 </head>
 <body>
 <main>
-  <h1>Hit 990</h1>
-  <div class="meta">Last updated: 2026-04-19</div>
-  <div class="lang-switch">
-    <a href="#" id="btn-zh" class="active">繁體中文</a>
-    <a href="#" id="btn-en">English</a>
+  <div class="brand">Hit 990</div>
+
+  <!-- Stage 1: Interstitial. Waits for a real human click before any Firebase
+       API call — blocks email-scanner token consumption. -->
+  <section id="stage-intro">
+    <h1 id="intro-title">請確認身分</h1>
+    <p id="intro-body">為了防止自動化掃描器影響驗證，請按下按鈕繼續。</p>
+    <button class="primary" id="btn-continue">繼續</button>
+    <p class="note" id="intro-note">這一步是為了保護你的帳號。</p>
+  </section>
+
+  <!-- Stage 2a: Password reset form (appears after we've verified the code). -->
+  <section id="stage-reset" class="hidden">
+    <h1>重設密碼</h1>
+    <p id="reset-hint">請輸入新密碼（至少 8 個字元）。</p>
+    <div class="field">
+      <label for="pw1">新密碼</label>
+      <input type="password" id="pw1" autocomplete="new-password">
+    </div>
+    <div class="field">
+      <label for="pw2">確認新密碼</label>
+      <input type="password" id="pw2" autocomplete="new-password">
+    </div>
+    <button class="primary" id="btn-submit">儲存</button>
+    <div id="reset-status" class="status hidden"></div>
+  </section>
+
+  <!-- Stage 2b: Generic success (email verified). -->
+  <section id="stage-ok" class="hidden">
+    <h1 id="ok-title">完成</h1>
+    <p id="ok-body">你可以回到 Hit 990 App 繼續使用。</p>
+  </section>
+
+  <!-- Stage 2c: Generic error. -->
+  <section id="stage-error" class="hidden">
+    <h1 id="err-title">連結無效</h1>
+    <p id="err-body">此連結已過期或已被使用過。請回到 App 重新發送。</p>
+    <p style="font-size:11px;color:#888;margin-top:18px;font-family:monospace;word-break:break-all;">
+      <span id="err-debug"></span>
+    </p>
+  </section>
+
+  <div class="foot">
+    Hit 990 · <a href="https://hit990-studio.github.io/privacy/">Privacy</a>
   </div>
-
-  <!-- ==================== 繁體中文 ==================== -->
-  <section id="zh" class="section active">
-    <h2>隱私政策</h2>
-    <p>本政策說明「Hit 990」行動應用程式(以下簡稱「本 app」)如何收集、使用與保護您的個人資料。使用本 app 即表示您已閱讀並同意本政策。</p>
-
-    <h2>1. 資料蒐集範圍</h2>
-    <p>本 app 為一款英語學習工具,我們刻意把資料蒐集保持到最低限度。以下列出所有可能蒐集到的資料類型:</p>
-    <h3>1.1 您主動提供的資料</h3>
-    <ul>
-      <li><strong>帳號資訊</strong>:若您選擇登入,我們會透過 Firebase Authentication 取得您的 Google 帳號 UID 或註冊時使用的電子郵件。</li>
-      <li><strong>個人設定</strong>:暱稱、生日、目標分數、偏好語系等,由您在設定頁自願填寫。</li>
-    </ul>
-    <h3>1.2 使用本 app 時自動產生的資料</h3>
-    <ul>
-      <li><strong>答題紀錄</strong>:您的答題結果、錯題、標記的不確定題目。<strong>僅儲存於您的裝置本機</strong>(Room 資料庫),不傳送至我們的伺服器。</li>
-      <li><strong>學習計畫進度</strong>:當日題數、連勝天數、徽章解鎖狀態。<strong>僅儲存於本機</strong>。</li>
-      <li><strong>Crash 與效能資料</strong>:若本 app 發生錯誤,Firebase Crashlytics 會蒐集匿名堆疊追蹤以供除錯,不含您的個人資料。</li>
-    </ul>
-    <h3>1.3 本 app 不會蒐集</h3>
-    <ul>
-      <li>精準定位(GPS)、通訊錄、通話記錄、簡訊、相機、麥克風、瀏覽歷程等敏感資料。</li>
-    </ul>
-
-    <h2>2. 第三方服務</h2>
-    <p>本 app 使用以下第三方服務,各服務有各自的隱私政策:</p>
-    <ul>
-      <li><strong>Firebase</strong>(Google):身分驗證、Crashlytics、遠端設定。<a href="https://firebase.google.com/support/privacy" target="_blank">Firebase 隱私</a></li>
-      <li><strong>Google Play Services</strong>:應用商店功能。<a href="https://policies.google.com/privacy" target="_blank">Google 隱私權政策</a></li>
-      <li><strong>MyMemory Translation API</strong>:多語系介面字串翻譯。僅傳送 app 介面文字,不傳送您的答題紀錄。</li>
-      <li><strong>Google AdMob</strong>(若您使用免費版):展示廣告,會蒐集廣告 ID。<a href="https://policies.google.com/technologies/ads" target="_blank">AdMob 隱私</a>。您可在裝置設定中重設或停用廣告 ID。</li>
-      <li><strong>Google Play Billing</strong>:處理免廣告方案購買,交易資訊由 Google 處理,本 app 不保存信用卡號。</li>
-    </ul>
-
-    <h2>3. 資料儲存與保留</h2>
-    <ul>
-      <li>答題紀錄、學習偏好等資料<strong>僅保存於您的裝置本機</strong>。解除安裝本 app 即清除所有本機資料。</li>
-      <li>Firebase 登入資料由 Google 依其政策保留,您可隨時在 app 內登出或刪除帳號。</li>
-      <li>本 app 開發者<strong>不會長期保存</strong>您的答題內容。</li>
-    </ul>
-
-    <h2>4. 您的權利</h2>
-    <p>依據適用之隱私權法令(包括但不限於歐盟 GDPR、加州 CCPA、臺灣個人資料保護法),您擁有以下權利:</p>
-    <ul>
-      <li><strong>查閱權</strong>:您可在 app 內查看自己的所有答題紀錄與設定。</li>
-      <li><strong>更正權</strong>:您可在設定頁修改個人資料。</li>
-      <li><strong>刪除權</strong>:您可在 app 內刪除答題紀錄,或直接解除安裝。</li>
-      <li><strong>攜出權</strong>:若您希望取得資料副本,請透過下方聯絡方式與我們聯繫。</li>
-      <li><strong>撤回同意</strong>:您可隨時登出 Firebase 帳號或解除安裝本 app。</li>
-    </ul>
-
-    <h2>5. 未成年人</h2>
-    <p>本 app 以 13 歲以上英語學習者為主要對象;13 歲以下兒童請在家長或監護人陪同下使用。若家長/監護人發現兒童在未取得同意的情況下使用本 app,請聯繫我們刪除相關資料。</p>
-
-    <h2>6. 資料安全</h2>
-    <p>我們透過合理的技術與組織措施保護您的資料,包含:使用 HTTPS 傳輸、Firebase 標準安全規則、本機加密儲存等。但任何系統都無法 100% 絕對安全,我們無法擔保完全防止未授權存取。</p>
-
-    <h2>7. 政策變更</h2>
-    <p>本政策可能隨 app 功能更新而修訂。重大變更我們會在 app 內通知。您持續使用本 app 即表示同意更新後的政策。</p>
-
-    <h2>8. 聯絡我們</h2>
-    <div class="contact">
-      若您對本政策或您的資料有任何疑問,請透過以下方式聯絡:<br>
-      Email: <code>hit990.support@gmail.com</code>
-    </div>
-  </section>
-
-  <!-- ==================== English ==================== -->
-  <section id="en" class="section">
-    <h2>Privacy Policy</h2>
-    <p>This policy describes how the "Hit 990" mobile application (the "App") collects, uses, and protects your personal data. By using the App you acknowledge and agree to this policy.</p>
-
-    <h2>1. Data We Collect</h2>
-    <p>The App is an English learning tool. Data collection is deliberately minimal. The categories below cover everything the App may collect:</p>
-    <h3>1.1 Data you provide</h3>
-    <ul>
-      <li><strong>Account info</strong>: if you sign in, Firebase Authentication exposes your Google account UID or the email you register with.</li>
-      <li><strong>Profile settings</strong>: nickname, birthday, target score, preferred language — only what you enter in Settings.</li>
-    </ul>
-    <h3>1.2 Data the App generates while you use it</h3>
-    <ul>
-      <li><strong>Practice records</strong>: answers, wrong-answer list, marked-uncertain items. <strong>Stored locally on your device only</strong> (Room DB) — never sent to our servers.</li>
-      <li><strong>Study-plan progress</strong>: daily question counts, streak, badge unlocks. <strong>Local only</strong>.</li>
-      <li><strong>Crash & performance data</strong>: Firebase Crashlytics collects anonymous stack traces so we can fix bugs. No personally identifiable information.</li>
-    </ul>
-    <h3>1.3 What we do NOT collect</h3>
-    <ul>
-      <li>Precise location (GPS), contacts, call logs, SMS, camera, microphone, browsing history, or any other sensitive personal data.</li>
-    </ul>
-
-    <h2>2. Third-party Services</h2>
-    <p>The App uses the third-party services below; each has its own privacy policy:</p>
-    <ul>
-      <li><strong>Firebase</strong> (Google): authentication, Crashlytics, remote config. <a href="https://firebase.google.com/support/privacy" target="_blank">Firebase privacy</a></li>
-      <li><strong>Google Play Services</strong>: app-store capabilities. <a href="https://policies.google.com/privacy" target="_blank">Google privacy policy</a></li>
-      <li><strong>MyMemory Translation API</strong>: used to translate UI strings across 14 locales. Only UI text is sent — never your practice data.</li>
-      <li><strong>Google AdMob</strong> (if you're on the free tier): serves ads; collects the advertising ID. <a href="https://policies.google.com/technologies/ads" target="_blank">AdMob privacy</a>. You can reset or opt out via your device settings.</li>
-      <li><strong>Google Play Billing</strong>: processes ad-removal purchases. Google handles payment data; the App never stores your card number.</li>
-    </ul>
-
-    <h2>3. Storage & Retention</h2>
-    <ul>
-      <li>Practice records and preferences are <strong>stored only on your device</strong>. Uninstalling the App removes all local data.</li>
-      <li>Firebase sign-in data is retained by Google per its own policy. You can sign out or delete your account from within the App at any time.</li>
-      <li>The App developer does <strong>not</strong> retain long-term copies of your practice content.</li>
-    </ul>
-
-    <h2>4. Your Rights</h2>
-    <p>Under applicable privacy laws (including GDPR, CCPA, and Taiwan's Personal Data Protection Act), you have the following rights:</p>
-    <ul>
-      <li><strong>Access</strong> — review all your practice records and settings inside the App.</li>
-      <li><strong>Correction</strong> — edit your profile in Settings.</li>
-      <li><strong>Deletion</strong> — erase your practice history inside the App or uninstall it.</li>
-      <li><strong>Portability</strong> — contact us if you want an export of your data.</li>
-      <li><strong>Withdraw consent</strong> — sign out of Firebase or uninstall the App at any time.</li>
-    </ul>
-
-    <h2>5. Minors</h2>
-    <p>The App targets English learners aged 13 and above. Children under 13 should use the App under adult supervision. If a parent or guardian discovers that a child has used the App without consent, please contact us to remove any related data.</p>
-
-    <h2>6. Security</h2>
-    <p>We apply reasonable technical and organizational safeguards, including HTTPS for all network traffic, Firebase's standard security rules, and encrypted local storage. No system is perfectly secure, however, and we cannot guarantee absolute protection against unauthorized access.</p>
-
-    <h2>7. Changes to this Policy</h2>
-    <p>We may revise this policy as the App evolves. Significant changes will be announced inside the App. Continued use constitutes acceptance of the updated policy.</p>
-
-    <h2>8. Contact</h2>
-    <div class="contact">
-      If you have any questions about this policy or your data, please contact us:<br>
-      Email: <code>hit990.support@gmail.com</code>
-    </div>
-  </section>
-
 </main>
-<script>
-  const zh = document.getElementById('zh');
-  const en = document.getElementById('en');
-  const btnZh = document.getElementById('btn-zh');
-  const btnEn = document.getElementById('btn-en');
-  function show(lang) {
-    if (lang === 'en') {
-      en.classList.add('active'); zh.classList.remove('active');
-      btnEn.classList.add('active'); btnZh.classList.remove('active');
-      document.documentElement.lang = 'en';
-    } else {
-      zh.classList.add('active'); en.classList.remove('active');
-      btnZh.classList.add('active'); btnEn.classList.remove('active');
-      document.documentElement.lang = 'zh-TW';
+
+<script type="module">
+  // Firebase Web SDK — loaded from the CDN so there's no build step.
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    getAuth,
+    verifyPasswordResetCode,
+    confirmPasswordReset,
+    applyActionCode,
+    checkActionCode,
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+  // ------------------------------------------------------------------
+  // Read params Firebase appends to our custom action URL.
+  // mode: "resetPassword" | "verifyEmail" | "recoverEmail" | ...
+  // oobCode: one-time token that actually mutates state
+  // apiKey: the project's web API key (public, fine to use client-side)
+  // lang: preferred language code
+  // continueUrl: optional post-action redirect
+  // ------------------------------------------------------------------
+  const params = new URLSearchParams(location.search);
+  const mode = params.get("mode") || "";
+  const oobCode = params.get("oobCode") || "";
+  const apiKeyFromUrl = params.get("apiKey") || "";
+  const lang = (params.get("lang") || "en").toLowerCase();
+
+  // The apiKey in the URL is authoritative (Firebase signs links with it).
+  // Hardcode our project id + authDomain since they're fixed for this app.
+  const firebaseConfig = {
+    apiKey: apiKeyFromUrl || "AIzaSyBbIiArDSNKXTUdNL89MxZMEMaIKYMDKlw",
+    authDomain: "hit-990.firebaseapp.com",
+    projectId: "hit-990",
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  auth.languageCode = lang || "en";
+
+  // ------------------------------------------------------------------
+  // Minimal i18n. Default zh-TW; swap to English on `lang=en`.
+  // Keeping this as one dict per string instead of a translation lib so the
+  // page stays zero-dependency and small.
+  // ------------------------------------------------------------------
+  const isEn = lang.startsWith("en");
+  const t = {
+    intro_title_reset: isEn ? "Verify it's you" : "請確認身分",
+    intro_body_reset: isEn
+      ? "To protect your account from automatic link scanners, tap Continue to keep going."
+      : "為了防止自動化掃描器影響驗證，請按下按鈕繼續。",
+    intro_title_verify: isEn ? "Confirm your email" : "確認你的 email",
+    intro_body_verify: isEn
+      ? "Tap Continue to verify your email address."
+      : "按下按鈕以完成 email 驗證。",
+    btn_continue: isEn ? "Continue" : "繼續",
+    btn_save: isEn ? "Save" : "儲存",
+    btn_saving: isEn ? "Saving…" : "儲存中…",
+    reset_title: isEn ? "Reset password" : "重設密碼",
+    reset_hint: isEn
+      ? "Enter your new password (at least 8 characters)."
+      : "請輸入新密碼（至少 8 個字元）。",
+    label_pw1: isEn ? "New password" : "新密碼",
+    label_pw2: isEn ? "Confirm password" : "確認新密碼",
+    err_too_short: isEn ? "Password must be at least 8 characters." : "密碼至少 8 個字元。",
+    err_mismatch: isEn ? "Passwords don't match." : "兩次密碼不一致。",
+    err_weak: isEn ? "Please choose a stronger password." : "請選擇更強的密碼。",
+    err_invalid: isEn
+      ? "This link has expired or has already been used."
+      : "此連結已過期或已被使用過。",
+    err_generic: isEn ? "Something went wrong. Please try again." : "發生錯誤，請稍後再試。",
+    ok_reset_title: isEn ? "Password updated" : "密碼已更新",
+    ok_reset_body: isEn
+      ? "You can now sign in to Hit 990 with your new password."
+      : "你現在可以用新密碼登入 Hit 990 了。",
+    ok_verify_title: isEn ? "Email verified" : "Email 已驗證",
+    ok_verify_body: isEn
+      ? "Thanks! Go back to the Hit 990 app to continue."
+      : "感謝驗證！請回到 Hit 990 App 繼續使用。",
+    err_title: isEn ? "Link no longer valid" : "連結無效",
+  };
+
+  // ------------------------------------------------------------------
+  // Helpers.
+  // ------------------------------------------------------------------
+  const $ = (id) => document.getElementById(id);
+  function show(id) {
+    for (const s of ["stage-intro", "stage-reset", "stage-ok", "stage-error"]) {
+      $(s).classList.toggle("hidden", s !== id);
     }
   }
-  btnZh.addEventListener('click', e => { e.preventDefault(); show('zh'); });
-  btnEn.addEventListener('click', e => { e.preventDefault(); show('en'); });
-  // Auto-pick based on browser
-  if ((navigator.language || '').startsWith('en')) show('en');
+  function setStatus(kind, msg) {
+    const el = $("reset-status");
+    el.className = "status " + kind;
+    el.textContent = msg;
+    el.classList.remove("hidden");
+  }
+
+  // ------------------------------------------------------------------
+  // Intro text depends on mode (reset vs verify).
+  // ------------------------------------------------------------------
+  if (mode === "verifyEmail") {
+    $("intro-title").textContent = t.intro_title_verify;
+    $("intro-body").textContent = t.intro_body_verify;
+  } else {
+    $("intro-title").textContent = t.intro_title_reset;
+    $("intro-body").textContent = t.intro_body_reset;
+  }
+  $("btn-continue").textContent = t.btn_continue;
+  $("btn-submit").textContent = t.btn_save;
+  document.querySelectorAll("[for=pw1]").forEach(e => e.textContent = t.label_pw1);
+  document.querySelectorAll("[for=pw2]").forEach(e => e.textContent = t.label_pw2);
+  document.querySelector("#stage-reset h1").textContent = t.reset_title;
+  $("reset-hint").textContent = t.reset_hint;
+  $("err-title").textContent = t.err_title;
+  $("err-body").textContent = t.err_invalid;
+
+  if (!oobCode || !mode) {
+    show("stage-error");
+  }
+
+  // ------------------------------------------------------------------
+  // Stage 1 → Stage 2 transition. Only runs after explicit human click.
+  // ------------------------------------------------------------------
+  $("btn-continue").addEventListener("click", async () => {
+    $("btn-continue").disabled = true;
+    try {
+      if (mode === "resetPassword") {
+        // Verifying the code here doesn't consume it — only confirmPasswordReset
+        // does. So we can show the new-password form with confidence.
+        await verifyPasswordResetCode(auth, oobCode);
+        show("stage-reset");
+        $("pw1").focus();
+      } else if (mode === "verifyEmail") {
+        // applyActionCode is the consumer for verify-email; there's no separate
+        // "dry run" that we can show an intermediate screen for. One click,
+        // one consumption — which is OK because the human already initiated it.
+        await applyActionCode(auth, oobCode);
+        $("ok-title").textContent = t.ok_verify_title;
+        $("ok-body").textContent = t.ok_verify_body;
+        show("stage-ok");
+      } else if (mode === "recoverEmail") {
+        await checkActionCode(auth, oobCode);
+        await applyActionCode(auth, oobCode);
+        $("ok-title").textContent = isEn ? "Email restored" : "Email 已還原";
+        $("ok-body").textContent = isEn
+          ? "Your sign-in email has been reverted."
+          : "你的登入信箱已還原。";
+        show("stage-ok");
+      } else {
+        show("stage-error");
+      }
+    } catch (e) {
+      const dbg = document.getElementById("err-debug");
+      if (dbg) {
+        dbg.textContent = `[${mode}] ${e?.code || ""} ${e?.message || String(e)}`.slice(0, 240);
+      }
+      show("stage-error");
+    }
+  });
+
+  // ------------------------------------------------------------------
+  // Password reset submit.
+  // ------------------------------------------------------------------
+  $("btn-submit").addEventListener("click", async () => {
+    const pw1 = $("pw1").value;
+    const pw2 = $("pw2").value;
+    $("reset-status").classList.add("hidden");
+    if (pw1.length < 8) {
+      setStatus("error", t.err_too_short);
+      return;
+    }
+    if (pw1 !== pw2) {
+      setStatus("error", t.err_mismatch);
+      return;
+    }
+    $("btn-submit").disabled = true;
+    $("btn-submit").innerHTML = '<span class="spinner"></span>' + t.btn_saving;
+    try {
+      await confirmPasswordReset(auth, oobCode, pw1);
+      $("ok-title").textContent = t.ok_reset_title;
+      $("ok-body").textContent = t.ok_reset_body;
+      show("stage-ok");
+    } catch (e) {
+      $("btn-submit").disabled = false;
+      $("btn-submit").textContent = t.btn_save;
+      const msg = String(e?.code || "");
+      if (msg.includes("weak-password")) setStatus("error", t.err_weak);
+      else if (msg.includes("invalid-action-code") || msg.includes("expired")) {
+        show("stage-error");
+      } else {
+        setStatus("error", t.err_generic);
+      }
+    }
+  });
 </script>
 </body>
 </html>
