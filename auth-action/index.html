@@ -191,6 +191,9 @@
   <section id="stage-error" class="hidden">
     <h1 id="err-title">連結無效</h1>
     <p id="err-body">此連結已過期或已被使用過。請回到 App 重新發送。</p>
+    <p style="font-size:11px;color:#888;margin-top:18px;font-family:monospace;word-break:break-all;">
+      <span id="err-debug"></span>
+    </p>
   </section>
 
   <div class="foot">
@@ -348,6 +351,10 @@
         show("stage-error");
       }
     } catch (e) {
+      const dbg = document.getElementById("err-debug");
+      if (dbg) {
+        dbg.textContent = `[${mode}] ${e?.code || ""} ${e?.message || String(e)}`.slice(0, 240);
+      }
       show("stage-error");
     }
   });
